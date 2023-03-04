@@ -28,6 +28,8 @@ return new class extends Migration
             $table->string('gender')->nullable();
             $table->unsignedBigInteger('breed_id')->nullable();
             $table->foreign('breed_id')->references('id')->on('animals_breeds')->onDelete('cascade');
+            //add time if user is online
+            $table->timestamp('last_activity')->nullable();
             $table->timestamps();
             $table->rememberToken();
         });

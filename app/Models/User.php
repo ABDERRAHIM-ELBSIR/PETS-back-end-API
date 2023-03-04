@@ -1,5 +1,6 @@
 <?php
 namespace App\Models;
+
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -15,6 +16,7 @@ class User extends Authenticatable implements JWTSubject
      * @var array
      */
     protected $fillable = [
+        'id',
         'name',
         'email',
         'password',
@@ -25,8 +27,9 @@ class User extends Authenticatable implements JWTSubject
         'address',
         'gender',
         'breed_id',
+        // 'last_activity'
     ];
-    
+
     // protected $guarded = ['']; 
     /**
      * The attributes that should be hidden for arrays.
@@ -45,13 +48,14 @@ class User extends Authenticatable implements JWTSubject
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
-    
+
     /**
      * Get the identifier that will be stored in the subject claim of the JWT.
      *
      * @return mixed
      */
-    public function getJWTIdentifier() {
+    public function getJWTIdentifier()
+    {
         return $this->getKey();
     }
     /**
@@ -59,9 +63,17 @@ class User extends Authenticatable implements JWTSubject
      *
      * @return array
      */
-    public function getJWTCustomClaims() {
+    public function getJWTCustomClaims()
+    {
         return [];
-    }    
+    }
 
+    public function isOnline()
+    {
+        if ($this->last_activity) {
+            return $this->last_activity->diffInMinutes(now()) < 5;
+        }
+        return false;
+    }
 
 }

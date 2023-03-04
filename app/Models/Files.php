@@ -5,13 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Notification extends Model
+class Files extends Model
 {
     use HasFactory;
-    protected $fillable = [
-        'user_id',
-        'content',
-        'type',
-        'is_read'
-    ];
+    protected $fillable = ['type', 'size', 'name','file'];
 }

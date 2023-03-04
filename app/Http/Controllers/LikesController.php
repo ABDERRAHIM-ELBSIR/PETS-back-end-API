@@ -2,27 +2,35 @@
 
 namespace App\Http\Controllers;
 
+use App\Notifications\likesNotification;
 use Illuminate\Http\Request;
 use App\Models\Likes;
+use App\Models\Posts;
+use App\Models\User;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Auth;
 use Validator;
+
 class LikesController extends Controller
 {
+    //show likes of post 
     public function show_likes($id)
     {
         $likes = Likes::where('post_id', '=', $id)
-        ->count();
-        if(!$likes){
+            ->count();
+
+        if (!$likes) {
             return response()->json([
-                'data'=>'no like to this post',
-                'status'=>404
+                'data' => 'no like to this post',
+                'status' => 404
             ]);
         }
         return response()->json([
-            'data'=>$likes,
-            'status'=>200
+            'data' => $likes,
+            'status' => 200
         ]);
     }
+    //add like to post 
     public function add_likes(Request $request)
     {
 
@@ -48,21 +56,38 @@ class LikesController extends Controller
             ]);
         }
 
+        //===============send notification if liked=========================
+        $post = Posts::find($request->post_id);
+
+        if (!$post) {
+            return response()->json([
+                'message' => 'post not found',
+                'status' => 404,
+            ]);
+        }
+        $user = User::find($post->user_id);
+        Notification::send($user, new likesNotification($likes,$user));
+        //===============send notification if liked=========================
+
         return response()->json([
             "message" => "post liked",
             "status" => 201,
         ]);
+
+
+
     }
     public function delete_like($id)
     {
-        $like=Likes::find($id);
+        $like = Likes::find($id);
+
         if (!$like) {
             return response()->json([
                 "message" => "like not found",
                 "status" => 404,
             ]);
         }
-        
+
         $like->delete();
 
         return response()->json([
