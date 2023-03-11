@@ -79,6 +79,7 @@ class CommentReplateController extends Controller
         $comment_replate = comments_replies::create([
             'content' => $request->content,
             'comment_id' => $request->comment_id,
+            // 'post_id'=>$id
         ]);
         //comment replated not creted
         if (!$comment_replate) {

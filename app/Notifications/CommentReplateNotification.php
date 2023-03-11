@@ -47,12 +47,15 @@ class CommentReplateNotification extends Notification
      */
     public function toArray($notifiable)
     {
-        list($name,$profile)=$this->get_user_info($this->user_create_comment_replate);
+        list($user_name, $user_img, $user_id) = $this->get_user_info($this->user_create_comment_replate);
         return [
-            'user_create_comment'=>$name,
-            'user_comment_img'=>$profile,
-            'comment_post_id' => $this->comment_replate->id,
-            'message'=>'commented in your post',
+            "user" => [       
+                'id' => $user_id,
+                'name' => $user_name,
+                'img' => $user_img,
+            ],
+            'comment_id' => $this->comment_replate->id,
+            'message'=>'replate to your comment',
         ];
     }
 }

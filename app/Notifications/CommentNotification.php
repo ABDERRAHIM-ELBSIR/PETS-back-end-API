@@ -48,11 +48,14 @@ class CommentNotification extends Notification
      */
     public function toArray($notifiable)
     {
-        list($name,$profile)=$this->get_user_info($this->user_create_comment);
+        list($user_name, $user_img, $user_id) = $this->get_user_info( $this->user_create_comment);
         return [
-            'user_create_comment'=>$name,
-            'user_comment_img'=>$profile,
-            'comment_post_id' => $this->comment->post_id,
+            "user" => [       
+                'id' => $user_id,
+                'name' => $user_name,
+                'img' => $user_img,
+            ],
+            'post_id' => $this->comment->post_id,
             'message'=>'commented in your post',
         ];
     }

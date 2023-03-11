@@ -18,10 +18,10 @@ class MessageNotification extends Notification
      *
      * @return void
      */
-    public function __construct($auth_user )
+    public function __construct($auth_user)
     {
-        $this->auth_user=  $auth_user;
- 
+        $this->auth_user = $auth_user;
+
     }
 
     /**
@@ -45,11 +45,15 @@ class MessageNotification extends Notification
      */
     public function toArray($notifiable)
     {
-        list($name,$profile)=$this->get_user_info($this->auth_user);
+        list($name, $profile, $user_id) = $this->get_user_info($this->auth_user);
         return [
-            'user_name'=>$name,
-            'user_img'=>$profile,
-            'message'=>'send message',
+            'user' => [
+                'id' => $user_id,
+                'name' => $name,
+                'img' => $profile,
+            ],
+
+            'message' => 'send message',
         ];
     }
 }

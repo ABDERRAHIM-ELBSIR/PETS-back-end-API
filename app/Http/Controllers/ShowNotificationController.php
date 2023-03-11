@@ -19,10 +19,13 @@ class ShowNotificationController extends Controller
             switch ($notification->type) {
                 case 'App\Notifications\PostNotification':
                     $notifications = [
-                        'user_crete_post_name' => $user->name,
-                        'user_crete_id' => $user->id,
-                        'user_crete_post_img' => $user->profile_img,
-                        'description' => $notification->data['post_description'],
+                        "user" => [
+                            'id' => $notification->data['user']->id,
+                            'name' => $notification->data['user']->name,
+                            'img' => $notification->data['user']->img,
+                        ],
+                        'description' => $notification->data['post_id'],
+                        'message' => $notification->data['message'],
                         'status' => 200,
                     ];
                     array_push($all_notification, $notifications);
@@ -30,9 +33,11 @@ class ShowNotificationController extends Controller
 
                 case 'App\Notifications\likesNotification':
                     $notifications = [
-                        'user_liked_post_name' =>$notification->data['name_of_user_liked'],
-                        'user_liked_post_img' => $notification->data['profile_img'],
-                        'user_crete_id' =>$notification->data['user_id'],
+                        "user" => [
+                            'id' => $notification->data['user']->id,
+                            'name' => $notification->data['user']->name,
+                            'img' => $notification->data['user']->img,
+                        ],
                         'content' => $notification->data['message'],
                         'status' => 200,
                     ];
@@ -40,19 +45,58 @@ class ShowNotificationController extends Controller
                     break;
                 case 'App\Notifications\CommentNotification':
                     $notifications = [
-                        'user_create_comment' =>$notification->data['user_create_comment'],
-                        'user_comment_img' => $notification->data['user_comment_img'],
-                        'comment_post_id' =>$notification->data['comment_post_id'],
+                        "user" => [
+                            'id' => $notification->data['user']->id,
+                            'name' => $notification->data['user']->name,
+                            'img' => $notification->data['user']->img,
+                        ],
+
+                        'post_id' => $notification->data['post_id'],
                         'content' => $notification->data['message'],
+                        'status' => 200,
+                    ];
+                    array_push($all_notification, $notifications);
+                    break;
+                case 'App\Notifications\CommentReplateNotification':
+                    $notifications = [
+                        "user" => [
+                            'id' => $notification->data['user']->id,
+                            'name' => $notification->data['user']->name,
+                            'img' => $notification->data['user']->img,
+                        ],
+                        'comment_id' => $notification->data['comment_id'],
+                        'message' => $notification->data['message'],
                         'status' => 200,
                     ];
                     array_push($all_notification, $notifications);
                     break;
                 case 'App\Notifications\MessageNotification':
                     $notifications = [
-                        'user_name' =>$notification->data['user_create_comment'],
-                        'user_img' => $notification->data['user_comment_img'],
-                        'content' => $notification->data['message'],
+                        "user" => [
+                            'id' => $notification->data['user']->id,
+                            'name' => $notification->data['user']->name,
+                            'img' => $notification->data['user']->img,
+                        ],
+
+                        'message' => $notification->data['message'],
+                        'status' => 200,
+                    ];
+                    array_push($all_notification, $notifications);
+                    break;
+                case 'App\Notifications\GroupNotification':
+                    $notifications = [
+                        "user" => [
+                            'id' => $notification->data['user']->id,
+                            'name' => $notification->data['user']->name,
+                            'img' => $notification->data['user']->img,
+                        ],
+                        "group" => [
+                            'id' => $notification->data['group']->id,
+                            'name' => $notification->data['group']->name,
+                            'img' => $notification->data['group']->img,
+                        ],
+                        'post_id'=>$notification->data['post_id'],
+                        'message' => $notification->data['message'],
                         'status' => 200,
                     ];
                     array_push($all_notification, $notifications);

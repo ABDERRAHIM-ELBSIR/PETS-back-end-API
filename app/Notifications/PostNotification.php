@@ -13,13 +13,13 @@ class PostNotification extends Notification
     use Queueable;
     use user_Trait;
     private $posts;
-private $user_create_post;
+    private $user_create_post;
     /**
      * Create a new notification instance.
      *
      * @return void
      */
-    public function __construct($posts,$user_create_post)
+    public function __construct($posts, $user_create_post)
     {
         $this->posts = $posts;
         $this->user_create_post = $user_create_post;
@@ -46,11 +46,15 @@ private $user_create_post;
      */
     public function toArray($notifiable)
     {
-        List($user_name,$user_img)=$this->get_user_info($this->user_create_post);
+        list($user_name, $user_img,$user_id) = $this->get_user_info($this->user_create_post);
         return [
-            'user_create_post_name'=>$user_name,
-            'user_create_post_img'=>$user_img,
-            'message'=>'create a new post'
+            "user" => [
+                "id"=>$user_id,
+                'name' => $user_name,
+                'img' => $user_img,
+            ],
+            'post_id'=>$this->posts->id,
+            'message' => 'create a new post'
         ];
     }
 }
