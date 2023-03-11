@@ -10,6 +10,7 @@ class Group_MembersController extends Controller
 {
     public function get_all_member($id){ //get all member of groupe give it  id 
         $members=Groups_members::where('group_id',"=",$id)->get();
+        $members_count=Groups_members::where('group_id',"=",$id)->count()->get();
         if (!$members) {
             return response()->json([
                 "message" => "not member in this group",
@@ -18,7 +19,8 @@ class Group_MembersController extends Controller
         }
 
         return response()->json([
-            'data'=>$members,
+            'member_count'=>$members_count,
+            'member'=>$members,
             "message" => "member find",
             "status" => 200,
         ]);

@@ -5,56 +5,73 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Groups;
 // use App\Models\Posts;
+use App\Traits\imgTrait;
+use App\Traits\user_Trait;
 use Illuminate\Http\Request;
 
 class SearchController extends Controller
 {
 
+    use imgTrait;
+    use user_Trait;
     public function search(Request $request)
     {
         $result_of_user = [];
         $result_of_group = [];
         if (!$request->type) {
-            $users = User::all();
-            $groups = Groups::all();
+            $users = User::where('name','LIKE','%'.$request->name.'%');
+            $groups = Groups::where('name','LIKE','%'.$request->name.'%');
             foreach ($users as $user) {
+                list($name,$profile)=$this->get_user_info($user->id);
                 $user_funded = [
-                        "user_name" => $user->name,
-                        "user_img" => $user->profile_img,
+                    "user_name" => $name,
+                    "user_img" => $profile,
                 ];
                 array_push($result_of_user, $user_funded);
             }
             foreach ($groups as $group) {
                 $group_founded = [
-                        "group_name" => $group->name,
-                        "group_img" => $group->profile_img,
+                    "group_name" => $group->name,
+                    "group_img" => $this->get_file_path($group->profile_img),
                 ];
                 array_push($result_of_group, $group_founded);
             }
-            return response()->json(
-                [
-                    "users"=>$result_of_user,
-                    "groups"=>$result_of_group
-                    
-                ]
-            );
-
-        } else {
-            $groups = Groups::all();
-            foreach ($groups as $group) {
-                $result = [
-                        "group_name" => $group->name,
-                        "group_img" => $group->profile_img,
-                ];
-                array_push($result_of_group, $result);
+            if (!$result_of_user | !$result_of_group) {
+                return response()->json([
+                    "message" => "sumtgn whorn ",
+                    "status" => 400
+                ]);
             }
             return response()->json(
                 [
-                    "groups"=>$result_of_group
+                    "users" => $result_of_user,
+                    "groups" => $result_of_group,
+                    "status" => 200
                 ]
             );
         }
-       
+
+        $groups = Groups::where('name','LIKE','%'.$request->name.'%');
+        foreach ($groups as $group) {
+            $result = [
+                "group_name" => $group->name,
+                "group_img" =>$this->get_file_path($group->profile_img),
+            ];
+            array_push($result_of_group, $result);
+        }
+        if (!$result) {
+            return response()->json([
+                "message" => "group not found ",
+                "status" => 404
+            ]);
+        }
+        return response()->json(
+            [
+                "groups" => $result_of_group
+            ]
+        );
+
+
     }
 
 }

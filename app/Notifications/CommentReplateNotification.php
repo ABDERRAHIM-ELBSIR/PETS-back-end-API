@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Traits\user_Trait;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -10,18 +11,19 @@ use Illuminate\Notifications\Notification;
 class CommentReplateNotification extends Notification
 {
     use Queueable;
-    private $comment;
-    private $user_create_comment;
+    use user_Trait;
 
+    private $comment_replate;
+    private $user_create_comment_replate;
     /**
      * Create a new notification instance.
      *
      * @return void
      */
-    public function __construct($comment,$user_create_comment)
+    public function __construct($comment_replate, $user_create_comment_replate)
     {
-        $this->comment = $comment;
-        $this->user_create_comment = $user_create_comment;
+        $this->comment_replate = $comment_replate;
+        $this->user_create_comment_replate =  $user_create_comment_replate;
 
     }
 
@@ -45,10 +47,11 @@ class CommentReplateNotification extends Notification
      */
     public function toArray($notifiable)
     {
+        list($name,$profile)=$this->get_user_info($this->user_create_comment_replate);
         return [
-            'user_create_comment'=>$this->user_create_comment->name,
-            'user_comment_img'=>$this->user_create_comment->profile_img,
-            'comment_post_id' => $this->comment->comment_id,
+            'user_create_comment'=>$name,
+            'user_comment_img'=>$profile,
+            'comment_post_id' => $this->comment_replate->id,
             'message'=>'commented in your post',
         ];
     }

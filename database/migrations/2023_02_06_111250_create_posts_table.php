@@ -19,8 +19,9 @@ return new class extends Migration
             $table->unsignedBigInteger('user_id');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->boolean('is_group_post');
-            $table->string('type'); // text || video || image
-            $table->unsignedBigInteger('file_id');
+            // $table->integer('group_id'); if post in group give group_id
+            $table->string('type'); // text || video || image  
+            $table->unsignedBigInteger('file_id')->nullable();
             $table->foreign('file_id')->references('id')->on('files')->onDelete('cascade');
             $table->timestamps();
         });

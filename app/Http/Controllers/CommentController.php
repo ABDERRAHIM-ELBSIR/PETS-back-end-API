@@ -51,7 +51,20 @@ class CommentController extends Controller
             'status' => 200
         ]);
     }
+    public function SendNotification($post_id ,$comment)
+    {
+        $post=Posts::find($post_id);
 
+        if (!$post) {
+            return response()->json([
+                'message' => 'post not found',
+                'status' => 404,
+            ]);
+        }
+        $user_create_comment=Auth::user()->id;
+        $user_create_post=User::find($post->user_id);
+        Notification::send($user_create_post, new CommentNotification($comment,$user_create_comment));
+    }
 
     public function Add_Comments(Request $request)
     {
@@ -84,17 +97,17 @@ class CommentController extends Controller
             ]);
         }
         //===============send notification if commented=========================
-        $post=Posts::find($request->post_id);
-
-        if (!$post) {
-            return response()->json([
-                'message' => 'post not found',
-                'status' => 404,
-            ]);
-        }
-        $user_create_comment=Auth::user();
-        $user_create_post=User::find($post->user_id);
-        Notification::send($user_create_post, new CommentNotification($comment,$user_create_comment));
+        // $post=Posts::find($request->post_id);
+        $this->SendNotification($request->post_id,$comment);  
+        // if (!$post) {
+        //     return response()->json([
+        //         'message' => 'post not found',
+        //         'status' => 404,
+        //     ]);
+        // }
+        // $user_create_comment=Auth::user();
+        // $user_create_post=User::find($post->user_id);
+        // Notification::send($user_create_post, new CommentNotification($comment,$user_create_comment));
         //===============send notification if commented=========================
 
         return response()->json([

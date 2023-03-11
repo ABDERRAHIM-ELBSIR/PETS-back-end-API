@@ -13,6 +13,7 @@ use App\Http\Controllers\GroupsController;
 use App\Http\Controllers\Group_MembersController;
 use App\Http\Controllers\ShowNotificationController;
 use App\Http\Controllers\SearchController;
+use App\Http\Controllers\PostGroopController;
 
 /*
 |--------------------------------------------------------------------------
@@ -45,6 +46,11 @@ Route::group([
     Route::get('/posts',[PostController::class,'get_posts_of_myFriend']);
     Route::post('/post/update/{id}', [PostController::class,'update']);    
     Route::delete('/post/delete/{id}', [PostController::class,'delete']);
+    // posts group  Routes
+    Route::post('group/post/create', [PostGroopController::class,'store']); 
+    Route::get('/group/posts/{id}',[PostGroopController::class,'get_posts_of_group']);
+    Route::post('/post/update/{id}', [PostGroopController::class,'update']);    
+    Route::delete('/post/delete/{id}', [PostGroopController::class,'delete']);
     //likes Routes    
     Route::get('/all/Likes/{id}', [LikesController::class,'show_likes']);    
     Route::post('/likes/add', [LikesController::class,'add_likes']);

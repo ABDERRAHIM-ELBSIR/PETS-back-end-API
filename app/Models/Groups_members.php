@@ -14,4 +14,11 @@ class Groups_members extends Model
         'role',
         'accepted'
     ];
+
+
+
+    public function posts()
+    {
+        return $this->hasMany(Posts::class);
+    }
 }

@@ -2,14 +2,21 @@
 
 namespace App\Http\Controllers;
 
+use App\Notifications\MessageNotification;
+use App\Traits\imgTrait;
+use App\Traits\user_Trait;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Notification;
 use Validator;
 use App\Models\Messages;
+use App\Models\User;
 use App\Models\Files;
 use Illuminate\Http\Request;
 
 class MessagesController extends Controller
 {
+    use imgTrait;
+    use user_Trait;
 
     public function Show_message($id)
     { //show messages for user
@@ -26,8 +33,27 @@ class MessagesController extends Controller
             ]);
         }
 
+        $data = [];
+        foreach ($messages as $message) {
+            $message_file = $this->get_file_path($message->file_id);
+            list($user_name, $user_img) = $this->get_user_info($message->user_id); 
+
+            $message_info = [
+                "message"=>[
+                    "content"=>$message->content,
+                    "file"=>$message_file
+                ],
+                "user_info"=>[
+                    "id"=>$message->user_id,
+                    "name"=>$user_name,
+                    "profile"=>$user_img
+                ],
+            ];
+            array_push($data, $message_info);
+        }
+
         return response()->json([
-            'data' => $messages,
+            'data'=>$data,
             'status' => 200
         ]);
     }
@@ -40,19 +66,20 @@ class MessagesController extends Controller
 
 
         $file_id = $request->file('file_id');
-        $file_id_data = null;
-        if ($file_id != null) {
-            $image_path = $file_id->store('images/message', 'chat_imgs');
-            $data = Files::create([
-                "type" => "image/png",
-                "size" => 20025,
-                //change name to refer_to id 
-                'name' => 'default',
-                //add type of refer_to  
-                "file" => "storage/" . $image_path
-            ]);
-            $file_id_data = $data;
-        }
+        $file_message_id = $this->upload_img($file_id, "message");
+        // $file_id_data = null;
+        // if ($file_id != null) {
+        //     $image_path = $file_id->store('images/message', 'chat_imgs');
+        //     $data = Files::create([
+        //         "type" => "image/png",
+        //         "size" => 20025,
+        //         //change name to refer_to id 
+        //         'name' => 'default',
+        //         //add type of refer_to  
+        //         "file" => "storage/" . $image_path
+        //     ]);
+        //     $file_id_data = $data;
+        // }
         $auth_user = Auth::user()->id;
         $validate = Validator::make($request->all(), [
             'content' => 'required|string',
@@ -67,15 +94,15 @@ class MessagesController extends Controller
             return response()->json($validate->errors()->toJson(), 400);
         }
 
-        if ($file_id_data != null) {
-            $file_id_data = $file_id_data->id;
-        }
+        // if ($file_id_data != null) {
+        //     $file_id_data = $file_id_data->id;
+        // }
         $message = Messages::create([
             'content' => $request->content,
             'status' => $request->status,
             'user_id' => $auth_user,
             'reciever_id' => $request->reciever_id,
-            'file_id' => $file_id_data,
+            'file_id' => $file_message_id,
             'type' => $request->type,
         ]);
 
@@ -85,7 +112,10 @@ class MessagesController extends Controller
                 "status" => 406,
             ]);
         }
-        
+        //sent notification 
+        $reciever_id=User::find($request->reciever_id);
+        Notification::send($reciever_id, new MessageNotification ($auth_user));
+
         return response()->json([
             'data' => $message,
             "message" => "message sent",

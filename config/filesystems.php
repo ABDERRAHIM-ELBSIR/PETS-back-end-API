@@ -44,10 +44,10 @@ return [
             'throw' => false,
         ],
 
-        'chat_imgs' => [
+        'images' => [
             'driver' => 'local',
-            'root' => public_path('chat_imgs'),
-            'url' => env('APP_URL').'/storage',
+            'root' => public_path('images'),
+            'url' => env('APP_URL').'/public',
             'visibility' => 'public',
             'throw' => false,
         ],

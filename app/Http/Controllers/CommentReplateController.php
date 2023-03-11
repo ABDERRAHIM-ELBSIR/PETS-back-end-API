@@ -49,6 +49,20 @@ class CommentReplateController extends Controller
         ]);
     }
 
+    public function SendNotification($comment_id ,$comment_replate)
+    {
+        $comment = Comments::find($comment_id);
+
+        if (!$comment) {
+            return response()->json([
+                'message' => 'post not found',
+                'status' => 404,
+            ]);
+        }
+        $user_create_comment_replate = Auth::user()->id;
+        $user_create_post = User::find($comment->user_id);
+        Notification::send($user_create_post, new CommentReplateNotification($comment_replate, $user_create_comment_replate));
+    }
 
     public function Add_Comment_Rep(Request $request)
     {
@@ -73,18 +87,8 @@ class CommentReplateController extends Controller
                 "status" => 406,
             ]);
         }
-        //===============send notification if commented=========================
-        $comment = Comments::find($request->comment_id);
-
-        if (!$comment) {
-            return response()->json([
-                'message' => 'post not found',
-                'status' => 404,
-            ]);
-        }
-        $user_create_comment_replate = Auth::user();
-        $user_create_post = User::find($comment->user_id);
-        Notification::send($user_create_post, new CommentReplateNotification($comment_replate, $user_create_comment_replate));
+        //===============send notification if commented========================
+        $this->SendNotification($request->comment_id ,$comment_replate);
         //===============send notification if commented=========================
         //show comment in response if have it
         return response()->json([

@@ -31,6 +31,18 @@ class LikesController extends Controller
         ]);
     }
     //add like to post 
+    public function SendNotification($post_id ,$likes){
+        $post = Posts::find($post_id);
+
+        if (!$post) {
+            return response()->json([
+                'message' => 'post not found',
+                'status' => 404,
+            ]);
+        }
+        $user = User::find($post->user_id);
+        Notification::send($user, new likesNotification($likes,$user));
+    }
     public function add_likes(Request $request)
     {
 
@@ -57,16 +69,16 @@ class LikesController extends Controller
         }
 
         //===============send notification if liked=========================
-        $post = Posts::find($request->post_id);
-
-        if (!$post) {
-            return response()->json([
-                'message' => 'post not found',
-                'status' => 404,
-            ]);
-        }
-        $user = User::find($post->user_id);
-        Notification::send($user, new likesNotification($likes,$user));
+        // $post = Posts::find($request->post_id);
+        $this->SendNotification($request->post_id,$likes);
+        // if (!$post) {
+        //     return response()->json([
+        //         'message' => 'post not found',
+        //         'status' => 404,
+        //     ]);
+        // }
+        // $user = User::find($post->user_id);
+        // Notification::send($user, new likesNotification($likes,$user));
         //===============send notification if liked=========================
 
         return response()->json([
@@ -77,9 +89,11 @@ class LikesController extends Controller
 
 
     }
-    public function delete_like($id)
+    public function delete_like($post_id)
     {
-        $like = Likes::find($id);
+        $auth_user=Auth::user()->id;
+        // $like = Likes::find($id);
+        $like = Likes::where('post_id',$post_id)->where('user_id',$auth_user)->get();
 
         if (!$like) {
             return response()->json([

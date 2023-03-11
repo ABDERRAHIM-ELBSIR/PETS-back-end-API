@@ -34,7 +34,6 @@ class ShowNotificationController extends Controller
                         'user_liked_post_img' => $notification->data['profile_img'],
                         'user_crete_id' =>$notification->data['user_id'],
                         'content' => $notification->data['message'],
-                        // 'post_id' => $notification->data['post_id'],
                         'status' => 200,
                     ];
                     array_push($all_notification, $notifications);
@@ -44,6 +43,15 @@ class ShowNotificationController extends Controller
                         'user_create_comment' =>$notification->data['user_create_comment'],
                         'user_comment_img' => $notification->data['user_comment_img'],
                         'comment_post_id' =>$notification->data['comment_post_id'],
+                        'content' => $notification->data['message'],
+                        'status' => 200,
+                    ];
+                    array_push($all_notification, $notifications);
+                    break;
+                case 'App\Notifications\MessageNotification':
+                    $notifications = [
+                        'user_name' =>$notification->data['user_create_comment'],
+                        'user_img' => $notification->data['user_comment_img'],
                         'content' => $notification->data['message'],
                         'status' => 200,
                     ];

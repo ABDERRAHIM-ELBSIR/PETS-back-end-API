@@ -15,6 +15,10 @@ class User extends Authenticatable implements JWTSubject
      *
      * @var array
      */
+
+    // public function get_file(){
+    //     return $this->hasOne(Files::class);
+    // }
     protected $fillable = [
         'id',
         'name',
