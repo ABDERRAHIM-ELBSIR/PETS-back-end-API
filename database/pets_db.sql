@@ -18,7 +18,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Base de données : `pets_db_test`
+-- Base de données : `pets_db`
 --
 
 -- --------------------------------------------------------

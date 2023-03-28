@@ -2,14 +2,17 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Traits\imgTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use App\Models\User;
-use App\Models\Files;
 use Validator;
 
 class AuthController extends Controller
 {
+    use imgTrait;
     /**
      * Get a JWT via given credentials.
      *
@@ -44,34 +47,9 @@ class AuthController extends Controller
         $user_id = time();
         // check if user uploaded a profile image  
         $profile_img = $request->file('profile_img');
-        $profile_img_data = null;
-        if ($profile_img != null) {
-            $image_path = $profile_img->store('images/profiles', 'chat_imgs');
-            $data = Files::create([
-                "type" => "image/png",
-                "size" => 20025,
-                //change name to refer_to id 
-                'name' => 'default',
-                //add type of refer_to  
-                "file" => "storage/" . $image_path
-            ]);
-            $profile_img_data = $data;
-        }
-        // check if user uploaded a cover image  
+        $profile_img_id = $this->upload_img($profile_img, "group/profile", $user_id, "profile");
         $cover_img = $request->file('cover_img');
-        $cover_img_data = null;
-        if ($cover_img != null) {
-            $image_path = $cover_img->store('images/covers', 'chat_imgs');
-            $data = Files::create([
-                "type" => "image/png",
-                "size" => 20025,
-                //change name to refer_to id 
-                'name' => 'default',
-                //add type of refer_to  
-                "file" => "storage/" . $image_path
-            ]);
-            $cover_img_data = $data;
-        }
+        $cover_img_id = $this->upload_img($cover_img, "group/cover", $user_id, "cover");
 
         //validate information for register
         $validator = Validator::make($request->all(), [
@@ -87,15 +65,6 @@ class AuthController extends Controller
         //if validate fails
         if ($validator->fails()) {
             return response()->json($validator->errors()->toJson(), 400);
-        }
-        //check id profile and cover if null
-        $profile_img_id = null;
-        $cover_img_id = null;
-        if ($profile_img_data != null) {
-            $profile_img_id = $profile_img_data->id;
-        }
-        if ($cover_img_data != null) {
-            $cover_img_id = $cover_img_data->id;
         }
         // create user
         $user = User::create(
@@ -153,6 +122,47 @@ class AuthController extends Controller
     {
         //get all data of user
         return response()->json(auth()->user());
+    }
+
+
+
+    public function forgotPassword(Request $request)
+    {
+
+        $data = $request->all();
+        /*echo "<pre>"; print_r($data); die;*/
+        $userCount = User::where('email', $data['email'])->count();
+        if ($userCount == 0) {
+            return redirect()->back()->with('flash_message_error', 'Email does not exists!');
+        }
+
+        //Get User Details
+        $userDetails = User::where('email', $data['email'])->first();
+
+        //Generate Random Password
+        $random_password = Str::random(8);
+
+        //Encode/Secure Password
+        $new_password = bcrypt($random_password);
+
+        //Update Password
+        User::where('email', $data['email'])->update(['password' => $new_password]);
+
+        //Send Forgot Password Email Code
+        $email = $data['email'];
+        $name = $userDetails->name;
+        $messageData = [
+            'email' => $email,
+            'name' => $name,
+            'password' => $random_password
+        ];
+        Mail::send('email.forgetpassword', $messageData, function ($message) use ($email) {
+            $message->to($email)->subject('New Password - E-com Website');
+        });
+
+        return response()->json([
+            'message'=>'youre password sended to youre email'
+        ]);
     }
     /**
      * Get the token array structure.

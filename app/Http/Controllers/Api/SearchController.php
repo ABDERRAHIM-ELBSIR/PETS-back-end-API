@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
+use App\Http\Controllers\Controller;
 
 use App\Models\User;
 use App\Models\Groups;
-// use App\Models\Posts;
 use App\Traits\imgTrait;
 use App\Traits\user_Trait;
 use Illuminate\Http\Request;
@@ -19,8 +19,8 @@ class SearchController extends Controller
         $result_of_user = [];
         $result_of_group = [];
         if (!$request->type) {
-            $users = User::where('name','LIKE','%'.$request->name.'%');
-            $groups = Groups::where('name','LIKE','%'.$request->name.'%');
+            $users = User::where('name','LIKE','%'.$request->name.'%')->get();
+            $groups = Groups::where('name','LIKE','%'.$request->name.'%')->get();
             foreach ($users as $user) {
                 list($name,$profile)=$this->get_user_info($user->id);
                 $user_funded = [
@@ -51,7 +51,7 @@ class SearchController extends Controller
             );
         }
 
-        $groups = Groups::where('name','LIKE','%'.$request->name.'%');
+        $groups = Groups::where('name','LIKE','%'.$request->name.'%')->get();
         foreach ($groups as $group) {
             $result = [
                 "group_name" => $group->name,

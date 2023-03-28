@@ -16,6 +16,8 @@ return new class extends Migration
         Schema::create('comments_replies', function (Blueprint $table) {
             $table->id();
             $table->string('content');
+            $table->unsignedBigInteger('img')->index()->nullable();
+            $table->foreign('img')->references('id')->on('files')->onDelete('cascade');
             $table->unsignedBigInteger('comment_id');
             $table->foreign('comment_id')->references('id')->on('comments')->onDelete('cascade');
             $table->timestamps();

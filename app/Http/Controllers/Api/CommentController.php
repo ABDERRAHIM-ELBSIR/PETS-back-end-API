@@ -1,6 +1,7 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
+use App\Http\Controllers\Controller;
 
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Support\Facades\Auth;
@@ -68,6 +69,10 @@ class CommentController extends Controller
 
     public function Add_Comments(Request $request)
     {
+        $id=time();
+        // check if user uploaded  image 
+        $img = $request->file('img');
+        $img_id = $this->upload_img($img, "comment",$id,"comment");
         //creator of comment 
         $auth_user = Auth::user()->id;
 
@@ -76,7 +81,7 @@ class CommentController extends Controller
             'content' => 'required|string',
             'user_id' => 'required|integer',
             'post_id' => 'required|integer',
-            'has_reply' => 'required'
+            'has_reply' => 'required',
         ]);
         //if validate fails
         if ($validate->fails()) {
@@ -84,10 +89,13 @@ class CommentController extends Controller
         }
         //crete comment
         $comment = Comments::create([
+            'id'=>$id,
             'content' => $request->content,
             'user_id' => $auth_user,
             'post_id' => $request->post_id,
             'has_reply' => $request->has_reply,
+            'img'=>$img_id
+
         ]);
         //if comment das not create
         if (!$comment) {
@@ -97,17 +105,7 @@ class CommentController extends Controller
             ]);
         }
         //===============send notification if commented=========================
-        // $post=Posts::find($request->post_id);
         $this->SendNotification($request->post_id,$comment);  
-        // if (!$post) {
-        //     return response()->json([
-        //         'message' => 'post not found',
-        //         'status' => 404,
-        //     ]);
-        // }
-        // $user_create_comment=Auth::user();
-        // $user_create_post=User::find($post->user_id);
-        // Notification::send($user_create_post, new CommentNotification($comment,$user_create_comment));
         //===============send notification if commented=========================
 
         return response()->json([

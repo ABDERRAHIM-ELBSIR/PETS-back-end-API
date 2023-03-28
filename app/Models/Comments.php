@@ -14,6 +14,6 @@ class Comments extends Model
         'user_id',
         'post_id',
         'has_reply',
-
+        'img'
     ];
 }

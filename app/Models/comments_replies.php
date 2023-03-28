@@ -11,6 +11,6 @@ class comments_replies extends Model
     protected $fillable=[
         'content',
         'comment_id',
-        // 'post_id'
+        'img'
     ];
 }

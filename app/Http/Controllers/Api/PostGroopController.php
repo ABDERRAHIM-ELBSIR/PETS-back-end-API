@@ -1,13 +1,15 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
+
+use App\Models\Groups_members;
 use App\Models\Groups_posts;
 use App\Models\Posts;
 use App\Models\User;
 use App\Models\Friend;
-use App\Models\Files;
-use App\Notifications\PostNotification;
+use App\Notifications\GroupNotification;
 use App\Traits\imgTrait;
 use App\Traits\user_Trait;
 use Illuminate\Support\Facades\Auth;
@@ -15,32 +17,21 @@ use Illuminate\Support\Facades\Notification;
 use Validator;
 use Illuminate\Http\Request;
 
-class PostController extends Controller
+class PostGroopController extends Controller
 {
     use imgTrait;
     use user_Trait;
 
-    public function get_posts_of_myFriend()
+    public function get_posts_of_group($id)
     {
-        $auth_user = Auth::user()->id;
-        $friends = Friend::
-            where('status', '=', true)
-            ->where('request_from', '=', $auth_user)
-            ->orwhere('request_to', '=', $auth_user)
-            ->limit(20)
+        $data = [];
+
+            $posts = Posts::join('groups_posts', 'groups_posts.post_id', '=', 'posts.id')
+            ->where('is_group_post', '=', true)
+            ->where('group_id', '=', $id)
+            ->where('groups_posts.accepted', '=', true)
             ->get();
-
-        if (!$friends) {
-            return response()->json(null, 404);
-        }
-
-        foreach ($friends as $friend) {
-            $posts = Posts::
-                inRandomOrder()
-                ->where('user_id', '=', $friend->request_to)
-                ->orwhere('user_id', '=', $friend->request_from)
-                ->limit(20)
-                ->get();
+            
 
             if (!$posts) {
                 return response()->json([
@@ -48,7 +39,7 @@ class PostController extends Controller
                     "status" => 404,
                 ]);
             }
-            $data = [];
+
             foreach ($posts as $post) {
                 $post_file = $this->get_file_path($post->file_id);
                 list($user_name, $user_img) = $this->get_user_info($post->user_id);
@@ -63,47 +54,44 @@ class PostController extends Controller
                         "id" => $post->id,
                         "description" => $post->description,
                         "file" => $post_file,
-                        "create_at"=>$post->create_at
+                        "create_at" => $post->create_at
                     ]
                 ];
                 array_push($data, $post_info);
             }
-        }
 
         return response()->json([
             "data" => $data,
             "status" => 201,
         ]);
 
+
     }
 
-    public function SendNotification($posts){
-        
-        $auth_user = Auth::user()->id;
-        $friends = Friend::
-            where('status', '=', true)
-            ->where('request_from', '=', $auth_user)
-            ->orwhere('request_to', '=', $auth_user)
+    public function SendNotification($group_id, $posts)
+    {
+        $members = Groups_members::
+            where('group_id', '=', $group_id)
             ->get();
 
-        if (!$friends) {
+        if (!$members) {
             return response()->json([
                 'message' => 'friend not found',
-                'status' => 200,
+                'status' => 404,
             ]);
         }
 
         $user_create_post = Auth::user()->id;
-        foreach ($friends as $friend) {
-            $users = User::where('id', '=', $friend->request_to)->orwhere('id', '=', $friend->request_from)->get();
-            Notification::send($users, new PostNotification($posts, $user_create_post));
+        foreach ($members as $member) {
+            $users = User::where('id', '=', $member->user_id)->get();
+            Notification::send($users, new GroupNotification($posts, $user_create_post, $group_id));
         }
     }
-    public function store(Request $request )
+    public function store(Request $request)
     { //store posts
-
+        $id = time();
         $file = $request->file('file');
-        $file_id = $this->upload_img($file, "posts");
+        $file_id = $this->upload_img($file, "group/posts", $id, 'group_post');
 
         //add type of file image|video|text
 
@@ -137,12 +125,14 @@ class PostController extends Controller
 
 
         $posts = Posts::create([
+            'id' => $id,
             'description' => $request->description,
             'user_id' => $auth_user,
             'is_group_post' => $request->is_group_post,
             'type' => $post_type,
             'file_id' => $file_id,
         ]);
+
         if (!$posts) {
             return response()->json([
                 "message" => "not acceptable",
@@ -150,25 +140,20 @@ class PostController extends Controller
             ]);
         }
 
-        //====================================$send notification for my fiends$===========================================
-        // $friends = Friend::        $
-        $this->SendNotification($posts);
-        //     where('status', '=', true)
-        //     ->where('request_from', '=', $auth_user)
-        //     ->orwhere('request_to', '=', $auth_user)
-        //     ->get();
+        $group_post = Groups_posts::create([
+            'post_id' => $posts->id,
+            'group_id' => $request->group_id
+        ]);
 
-        // if (!$friends) {
-        //     return response()->json([
-        //         'message' => 'friend not found',
-        //         'status' => 200,
-        //     ]);
-        // }
-        // $user_create_post = Auth::user()->id;
-        // foreach ($friends as $friend) {
-        //     $users = User::where('id', '=', $friend->request_to)->orwhere('id', '=', $friend->request_from)->get();
-        //     Notification::send($users, new PostNotification($posts, $user_create_post));
-        // }
+        if (!$group_post) {
+            return response()->json([
+                "message" => "sumtign whorne",
+                "status" => 400
+            ]);
+        }
+
+        //====================================$send notification for my fiends$===========================================
+        $this->SendNotification($request->group_id, $posts);
         //====================================$send notification for my fiends$===========================================
 
 
@@ -179,9 +164,9 @@ class PostController extends Controller
         ]);
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, $group_id, $post_id)
     {
-        // $auth_user = Auth::user()->id;
+        $auth_user = Auth::user()->id;
         $validate = Validator::make($request->all(), [
             'description' => 'string',
             'user_id' => 'required|integer',
@@ -194,7 +179,8 @@ class PostController extends Controller
             return response()->json($validate->errors()->toJson(), 400);
         }
 
-        $post = Posts::find($id);
+        $post = Groups_posts::where("group_id", $group_id)->where('id', $post_id)->get();
+
 
         if (!$post) {
             return response()->json([
@@ -210,9 +196,9 @@ class PostController extends Controller
             "status" => 201,
         ]);
     }
-    public function delete_post($id)
+    public function delete_post($post_id)
     { //delete post
-        $post = Posts::find($id);
+        $post = Posts::find('id', $post_id);
 
         if (!$post) {
             return response()->json([

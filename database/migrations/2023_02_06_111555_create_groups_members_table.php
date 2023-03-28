@@ -19,7 +19,7 @@ return new class extends Migration
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->unsignedBigInteger('group_id');
             $table->foreign('group_id')->references('id')->on('groups')->onDelete('cascade');
-            $table->string('role');
+            $table->string('role')->default('user');
             $table->boolean('accepted');
             $table->timestamps();
         });

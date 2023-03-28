@@ -1,6 +1,7 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
+use App\Http\Controllers\Controller;
 
 use App\Notifications\MessageNotification;
 use App\Traits\imgTrait;
@@ -64,22 +65,9 @@ class MessagesController extends Controller
     public function store(Request $request)
     {
 
-
+        $id=time();
         $file_id = $request->file('file_id');
-        $file_message_id = $this->upload_img($file_id, "message");
-        // $file_id_data = null;
-        // if ($file_id != null) {
-        //     $image_path = $file_id->store('images/message', 'chat_imgs');
-        //     $data = Files::create([
-        //         "type" => "image/png",
-        //         "size" => 20025,
-        //         //change name to refer_to id 
-        //         'name' => 'default',
-        //         //add type of refer_to  
-        //         "file" => "storage/" . $image_path
-        //     ]);
-        //     $file_id_data = $data;
-        // }
+        $file_message_id = $this->upload_img($file_id, "message",$id,'message');
         $auth_user = Auth::user()->id;
         $validate = Validator::make($request->all(), [
             'content' => 'required|string',
@@ -93,11 +81,8 @@ class MessagesController extends Controller
         if ($validate->fails()) {
             return response()->json($validate->errors()->toJson(), 400);
         }
-
-        // if ($file_id_data != null) {
-        //     $file_id_data = $file_id_data->id;
-        // }
         $message = Messages::create([
+            'id'=>$id,
             'content' => $request->content,
             'status' => $request->status,
             'user_id' => $auth_user,

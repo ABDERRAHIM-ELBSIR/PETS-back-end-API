@@ -16,9 +16,8 @@ return new class extends Migration {
             $table->id();
             $table->string('type')->onDelete('cascade');
             $table->integer('size')->onDelete('cascade');
-            //change name of this column to refer_to id of user or ^post references to 
-            $table->integer('name')->onDelete('cascade');
-            //$table->integer('refer_type')->onDelete('cascade');//type of reference post|user
+            $table->integer('ref_to');
+            $table->string('ref_type');//type of reference post|user
 
             $table->string('file')->onDelete('cascade');
             $table->timestamps();

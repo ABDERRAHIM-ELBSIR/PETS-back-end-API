@@ -4,16 +4,16 @@ use App\Http\Controllers\CommentController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
-use App\Http\Controllers\FriendsController;
-use App\Http\Controllers\PostController;
-use App\Http\Controllers\LikesController;
-use App\Http\Controllers\CommentReplateController;
-use App\Http\Controllers\MessagesController;
-use App\Http\Controllers\GroupsController;
-use App\Http\Controllers\Group_MembersController;
-use App\Http\Controllers\ShowNotificationController;
-use App\Http\Controllers\SearchController;
-use App\Http\Controllers\PostGroopController;
+use App\Http\Controllers\Api\FriendsController;
+use App\Http\Controllers\Api\PostController;
+use App\Http\Controllers\Api\LikesController;
+use App\Http\Controllers\Api\CommentReplateController;
+use App\Http\Controllers\Api\MessagesController;
+use App\Http\Controllers\Api\GroupsController;
+use App\Http\Controllers\Api\Group_MembersController;
+use App\Http\Controllers\Api\ShowNotificationController;
+use App\Http\Controllers\Api\SearchController;
+use App\Http\Controllers\Api\PostGroopController;
 
 /*
 |--------------------------------------------------------------------------
@@ -28,6 +28,7 @@ use App\Http\Controllers\PostGroopController;
 
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
+Route::post('/forgetpassword', [AuthController::class, 'forgotPassword']);
 
 Route::group([
     'middleware' => 'api',
@@ -37,10 +38,12 @@ Route::group([
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::post('/refresh', [AuthController::class, 'refresh']);
     Route::get('/user-profile', [AuthController::class, 'userProfile']); 
-    //friends Routes
+    //friends Routes    
+    Route::get('/friends/accepted', [FriendsController::class,'myfriend']); 
     Route::post('/request/send', [FriendsController::class,'store']); 
-    Route::get('/friends/accepted', [FriendsController::class,'index']);    
-    Route::get('/friends/not_accepted/{id}', [FriendsController::class,'friend_not_accepted']);  
+    Route::get('/friend/not_accepted', [FriendsController::class,'friend_not_accepted']);  
+    Route::get('friend/accepte/{id}', [FriendsController::class,'update']);  
+    Route::delete('/request/delete/{id}', [FriendsController::class,'delete']);  
     //posts Routes
     Route::post('/post/create', [PostController::class,'store']); 
     Route::get('/posts',[PostController::class,'get_posts_of_myFriend']);
@@ -71,14 +74,17 @@ Route::group([
     Route::Delete('/delete/message/{id}', [MessagesController::class,'delete_message']);
     //groupe routes
     Route::post('/create/group', [GroupsController::class,'create_group']);
+    Route::get('/group', [GroupsController::class,'get_all_group']);
+    Route::get('/group/{id}', [GroupsController::class,'get_spisifique_group']);
+    Route::get('/user/group', [GroupsController::class,'get_group_for_user']);
     //groupe Members
     Route::get('/group/member/{id}', [Group_MembersController::class,'get_all_member']);
     Route::post('/join_to_group', [Group_MembersController::class,'join_to_group']);
     Route::Delete('/delete/member/{id}', [Group_MembersController::class,'delete_member']);
     //show notification 
-    Route::get('/notification/{id}',[ShowNotificationController::class,'ShowNotification']);
+    Route::get('/notification',[ShowNotificationController::class,'ShowNotification']);
     //search Routes
-    Route::get('/search/{id}',[SearchController::class,'search']);
+    Route::get('/search',[SearchController::class,'search']);
 
 });
 

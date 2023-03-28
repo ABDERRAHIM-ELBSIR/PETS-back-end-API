@@ -1,6 +1,7 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
+use App\Http\Controllers\Controller;
 
 use Illuminate\Support\Facades\Auth;
 use App\Models\comments_replies;
@@ -66,6 +67,10 @@ class CommentReplateController extends Controller
 
     public function Add_Comment_Rep(Request $request)
     {
+        $id=time();
+        // check if user uploaded  image 
+        $img = $request->file('img');
+        $img_id = $this->upload_img($img, "comment",$id,"comment");
         //validate info add comment
         $validate = Validator::make($request->all(), [
             'content' => 'required|string',
@@ -77,9 +82,10 @@ class CommentReplateController extends Controller
         }
         //create comment replate
         $comment_replate = comments_replies::create([
+            'id'=>$id,
             'content' => $request->content,
             'comment_id' => $request->comment_id,
-            // 'post_id'=>$id
+            'img'=>$img_id ,
         ]);
         //comment replated not creted
         if (!$comment_replate) {
